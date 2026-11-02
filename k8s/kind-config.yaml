@@ -1,21 +1,26 @@
 # Kind cluster definition for the OpsPilot laboratory (spec §4.1, §20.1, §20.3).
 #
-# Version-freezing policy (spec §4.4 + docs/project/S0_S1_PLAN.md S0.1):
-# kind itself is NOT yet installed on this machine (DO/NO-GO gate G0 is open),
-# so the node image below is a *candidate* pinned to match the already-installed
-# kubectl client (v1.34.1). Before the first `kind create cluster`, verify that
-# this exact node image tag exists (docker manifest inspect kind/node:v1.34.0 or
-# https://github.com/kubernetes-sigs/kind/releases). Freeze the verified pair
-# (kind version + node image) in docs/project/TEAM_WORK_PLAN.md after the first
-# successful run — do not change it silently afterwards.
+# Pinned versions (verified against the official kind v0.33.0 release notes,
+# https://github.com/kubernetes-sigs/kind/releases/tag/v0.33.0, on 2026-11-02):
+#   - kind CLI ................... v0.33.0 (operator installs it manually — gate G0)
+#   - node image ................. Kubernetes 1.37.0, digest-pinned to the image
+#     published with kind v0.33.0. The release notes explicitly require using the
+#     @sha256 digest "to guarantee an image built for this release".
+#   The digest is also what keeps the lab reproducible across Docker caches
+#   (spec §4.4 freezes versions only after verification; this one is verified
+#   from the release record BEFORE first use, at G0).
 #
-# Sizing (spec §4.4 / §20.5): single node, capped to stay within a 15.2 GB RAM host.
+# kubectl compatibility (Kubernetes skew policy): the client must be within one
+# minor version of the server. With a 1.37.0 node, use kubectl 1.36–1.38; the
+# local client currently observed on this machine (v1.34.1) is BELOW the
+# supported skew window and must be upgraded by the operator (no auto-install —
+# see scripts/check-environment.ps1, which warns on old clients).
+#
+# Sizing (spec §4.4 / §20.5): single node, single cluster, sequential services.
 
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: opspilot
 nodes:
   - role: control-plane
-    image: kindest/node:v1.34.0  # CANDIDATE - verify tag availability at G0, then freeze
-    # Naive host resource guard-rails are not supported by kind here; capacity is
-    # managed by keeping one single-node cluster and sequential services (§20.5).
+    image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5

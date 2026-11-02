@@ -6,8 +6,11 @@
 #   SC-04  OOMKilled
 #
 # Numbering note (also in docs/project/ROADMAP.md): SC-03 is intentionally
-# RESERVED for the conditional MVP extension family "Pending Pod" (spec §4.3).
-# Extensions may only be added after MVP validation and team confirmation.
+# RESERVED for the OPTIONAL extension family "Pending Pod" (spec §4.3). It is
+# NOT a mandatory deliverable: the three mandatory MVP families are SC-01, SC-02
+# and SC-04 (spec §4.1), whose manifests are prepared in S0 and executed in S1.
+# SC-03 is owned by S2 and may only be implemented after MVP validation and team
+# confirmation (together with the other conditional extensions).
 #
 # Each scenario folder contains:
 #   deployment.yaml  - the manifest that creates the incident (via demo-app image)

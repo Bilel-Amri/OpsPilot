@@ -1,10 +1,10 @@
 # Scenario contract - SC-02 ImagePullBackOff (spec §10.6 row 2)
 scenario_id: SC-02
-title: ImagePullBackOff (image never available locally)
+title: ImagePullBackOff (kubelet pull attempts fail on an unresolvable registry host)
 family: imagepullbackoff
-status: implemented-untested   # is tested after real run in S1/S2
+status: implemented-untested   # tested after the real run (S1)
 spec_reference: "Cahier des charges §9.2, §10.6 row 2"
-demo_behavior: "manifest-only (image tag never built + imagePullPolicy: Never -> offline reproducible ErrImagePull/ImagePullBackOff)"
+demo_behavior: "manifest-only: image on the reserved .invalid host (RFC 2606) with imagePullPolicy: Always -> the kubelet genuinely attempts pulls; ErrImagePull first, then the ImagePullBackOff back-off cycle. Correction of the earlier `Never` design, which yielded ErrImageNeverPull instead (never pull attempted)."
 deployment: sc-02-imagepullbackoff/deployment.yaml
 
 required_observations:
@@ -13,21 +13,25 @@ required_observations:
     criticality: critical
   - field: pod_phase                # expected Pending: container never starts
     source_type: pod_status
-    expected_value: Pending
     criticality: critical
   - field: container_state_waiting_reason
     source_type: pod_status
-    expected_value: ImagePullBackOff # ErrImagePull first, then BackOff cycling
+    expected_value: ImagePullBackOff # ErrImagePull on first attempt, then back-off cycling
     criticality: critical
-  - field: container_image          # the image declared in spec must match the manifest
+  - field: container_image          # image declared in spec must match the manifest
     source_type: pod_spec
     criticality: critical
-  - field: linked_events            # Warning/Failed: ErrImagePull, ImagePullBackOff
+  - field: linked_events            # Warning/Failed: ErrImagePull, then ImagePullBackOff
     source_type: events
+    expected_value: ErrImagePull
     criticality: critical
   - field: event_timestamps         # firstTimestamp/lastTimestamp/count preserved
     source_type: events
     criticality: expected
+  - field: no_errimageneverpull     # static guard on the pull design
+    source_type: manifest
+    criticality: critical
+    note: imagePullPolicy must attempt pulls (Always/IfNotPresent); policy Never yields ErrImageNeverPull, which is NOT this scenario's family
   - field: logs_current             # NOT expected: container never started
     source_type: pod_logs
     criticality: expected
@@ -37,4 +41,7 @@ required_observations:
     criticality: expected
     note: same — absence is normal for this family
 
-expected_pitfall: inventing_app_logs_for_a_container_that_never_started
+expected_pitfall: |
+  (1) using imagePullPolicy: Never and mistaking ErrImageNeverPull for a genuine
+  ImagePullBackOff cycle (corrected by this review); (2) inventing app logs for a
+  container that never started (absence must be recorded as unavailable, NFR-01).

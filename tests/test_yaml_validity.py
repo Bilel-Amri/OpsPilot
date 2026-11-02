@@ -6,6 +6,8 @@ Run: python -m pytest tests/ -v
 """
 from pathlib import Path
 
+import re
+
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -16,15 +18,19 @@ def _load_k8s_yaml(path: Path):
         return yaml.safe_load(f)
 
 
-def test_kind_config_is_valid_and_pins_a_node_image():
+def test_kind_config_is_valid_and_pins_a_digest_pinned_node_image():
     cfg = _load_k8s_yaml(REPO_ROOT / "k8s" / "kind-config.yaml")
     assert cfg["apiVersion"] == "kind.x-k8s.io/v1alpha4"
     assert cfg["kind"] == "Cluster"
-    # Node version must be pinned (spec §4.4). The candidate pin is verified at G0.
+    # Node version must be pinned (spec §4.4) INCLUDING the @sha256 digest
+    # (kind release notes require the digest to guarantee the release image).
     nodes = cfg["nodes"]
     assert nodes, "kind config must declare at least one node"
     for node in nodes:
-        assert node.get("image"), "every node must pin a node image"
+        image = node.get("image", "")
+        assert re.fullmatch(
+            r"kindest/node:v1\.37\.0@sha256:[0-9a-f]{64}", image
+        ), f"node image must be tag+digest pinned, got: {image!r}"
 
 
 def test_all_k8s_yaml_files_parse():

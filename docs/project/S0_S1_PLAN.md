@@ -31,14 +31,25 @@ Tasks:
        memory-heavy apps before cluster work).
 2. 🔶 Start Docker Desktop manually (user action — no automatic install/start is
    performed by this repository) and re-run the check until all items print GO.
-3. 🔶 Install **Kind** manually (user action; version frozen only after first
-   successful run, spec §4.4). Suggested pinned pair (verify at execution):
-   `kind` latest stable + node image `kindest/node:v1.34.0` (matches installed
-   kubectl 1.34.x; confirm the exact tag exists on Docker Hub before pinning).
+3. 🔶 Install **Kind** manually (user action — no automatic installation is
+   performed by this repository). Verified pin targets (checked against the
+   official kind v0.33.0 release notes on 2026-11-02):
+   - `kind` CLI version **v0.33.0**;
+   - node image **`kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5`**
+     (already pinned in `k8s/kind-config.yaml`; the release notes require the
+     `@sha256` digest to guarantee an image built for this release);
+   - `kind load docker-image` requires the SAME kind release that created the
+     cluster — install v0.33.0 before creating the cluster.
+4. 🔶 Upgrade **kubectl** if needed: the pinned server is 1.37.0, so the supported
+   client range is **1.36–1.38** (Kubernetes skew policy, kubectl ± 1 minor).
+   The client observed at initialization (v1.34.1) is below the window; the
+   operator upgrades it manually. `check-environment.ps1` warns on too-old
+   clients.
 
 **Acceptance criteria (AC-S0.1):**
 - [✅ rule defined / 🔶 run pending] `check-environment.ps1` run prints GO for:
-  Docker daemon reachable, `kind version` works, `kubectl version` ≥ 1.28,
+  Docker daemon reachable, `kind version` works, `kubectl version` client in the
+  1.36–1.38 window (with a printed warning otherwise),
   Python ≥ 3.11, ≥ 8 GB free RAM at cluster time, ≥ 20 GB free disk.
 - Versions of Docker / Kind / kubectl / kind node image recorded in
   `docs/project/TEAM_WORK_PLAN.md` once all GO.
@@ -169,14 +180,19 @@ attempt number each start so `--previous` logs differ from current logs.
 
 **Owner:** Mohamed Amine Gotai.
 
-Tasks: 🔶 run `-Scenario SC-02`: manifest references `opspilot/demo-app:s2-tag-
-never-built` with `imagePullPolicy: Never` → kubelet reports `ErrImagePull` then
-cycles `ImagePullBackOff` **without any registry dependency** (reproducible
-offline; decision documented in the manifest comments; a network-based variant is
-noted as alternative).
+Tasks: 🔶 run `-Scenario SC-02`: the manifest points at an image whose registry
+host uses the reserved `.invalid` TLD (RFC 2606) with `imagePullPolicy: Always`
+→ the kubelet genuinely **attempts** pulls, the host can never resolve, the
+first event is `ErrImagePull`, and after the first retry the Pod cycles
+`ImagePullBackOff` — no real registry identity is contacted. Design correction
+(S0 review): an earlier draft used `imagePullPolicy: Never` with a never-built
+tag, which yields `ErrImageNeverPull` (no pull attempt) and is NOT the target
+failure family; the corrected design is documented in the manifest header, and
+a network variant (nonexistent tag on a real registry) is noted as alternative.
 
 **Acceptance criteria:** pod events include `Failed`/`ErrImagePull` and
-`ImagePullBackOff` referencing the Pod UID; no application logs exist (container
+`ImagePullBackOff` referencing the Pod UID; `ErrImageNeverPull` must NOT appear
+(pull-attempt design guard); no application logs exist (container
 never started — absence expected, per spec §10.6 row 2); events carry
 firstTimestamp/lastTimestamp/count (spec §9.2).
 
@@ -236,5 +252,7 @@ source, identity (pod UID), collection time and hash; missing data recorded as
 - Do **not** mark S1 ✅ until G0 passes and a real snapshot exists in `out/evidence/`.
 - The (S1-prepared) cluster/RBAC apply step lives in `create-cluster.ps1` but RBAC
   *refusal testing* is re-run in S2 when MCP starts calling with this identity.
-- SC-03 remains reserved for the conditional extension family (Pending Pod,
-  spec §4.3); mandatory families use SC-01/SC-02/SC-04.
+- SC-03 remains reserved as the **optional** conditioning extension (Pending Pod,
+  spec §4.3), owned by S2 and executed only when the MVP is stable and the team
+  confirms it; mandatory families are SC-01/SC-02/SC-04, executed in S1
+  (see ROADMAP stage-ownership note).

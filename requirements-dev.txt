@@ -1,0 +1,7 @@
+# Development/test dependencies for the OpsPilot repository (S0 foundation).
+# Install with:  python -m pip install -r requirements-dev.txt
+# These are the STATIC test requirements only (no cluster needed). Runtime or
+# backend requirements arrive with their stages (S2 MCP / S4 RAG / S5 backend);
+# each is frozen after verification, per spec §4.4 and §16.2.
+PyYAML==6.0.3
+pytest==9.1.1

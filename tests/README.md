@@ -10,11 +10,14 @@ generation, image build) are executed by `scripts/*.ps1` and documented in
 |---|---|---|
 | `test_yaml_validity.py` | Kind config structure + pinned node image; all committed YAML parses; demo app is not the backend and supports the 3 scenarios | ✅ tests executed locally |
 | `test_rbac_manifests.py` | Role grants exactly `pods get,list` / `pods/log get` / `events get,list`; never secrets, never write verbs; RoleBinding scoped to the lab namespace | ✅ tests executed locally (runtime refusals verified by script at G0) |
-| `test_scenario_contracts.py` | The 3 mandatory scenarios (SC-01/SC-02/SC-04) exist with contract + deployment; SC-02 stays offline-reproducible; SC-04 forbids presuming exit code 137; workloads target `opspilot-lab` | ✅ tests executed locally (real incident generation still pending G1) |
+| `test_scenario_contracts.py` | The 3 mandatory scenarios (SC-01/SC-02/SC-04) exist with contract + deployment; SC-02 uses a valid pull-attempt design (`Always` + reserved `.invalid` host); SC-04 forbids presuming exit code 137; workloads target `opspilot-lab` | ✅ tests executed locally (real incident generation still pending G1) |
 
 Run:
 
 ```powershell
+# first time only (from the repository root):
+python -m pip install -r requirements-dev.txt   # pytest + PyYAML (pinned)
+
 python -m pytest tests/ -v
 ```
 
