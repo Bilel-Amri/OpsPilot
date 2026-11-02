@@ -47,6 +47,19 @@ Test-Item 'kubectl client' {
     (kubectl version --client=true 2>$null | Select-Object -First 1)
 } -Mandatory
 
+# Kubernetes client skew: kubectl must be within one minor of the pinned node
+# server (1.37.0) -> supported clients are 1.36-1.38. A too-old client does not
+# hard-fail (kind tasks still work locally) but is reported as a warning so the
+# operator upgrades it manually before G0 (no auto-install).
+$clientMinor = $null
+try {
+    $clientLine = (kubectl version --client=true 2>$null | Select-Object -First 1) -as [string]
+    if ($clientLine -match 'v1\.(\d+)\.') { $clientMinor = [int]$Matches[1] }
+} catch { }
+if ($clientMinor -and $clientMinor -lt 36) {
+    Write-Output ("[WARN] kubectl client minor 1.{0} is below the skew window (1.36-1.38) for the pinned node image 1.37.0 - upgrade the client manually before G0." -f $clientMinor)
+}
+
 Test-Item 'Git' { git --version } -Mandatory
 
 Test-Item 'Python >= 3.11 (MCP SDK v2 requirement, spec 4.4)' {

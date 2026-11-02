@@ -122,8 +122,11 @@ run `scripts/check-environment.ps1`, start Docker Desktop, install Kind, then ru
 
 ## Quick start (S0/S1, once G0 passes)
 
-Requirements: Windows 10/11, Docker Desktop (Linux engine, WSL2), Kind, kubectl ≥ 1.34,
-Python ≥ 3.11 (tested with 3.14), PowerShell.
+Requirements: Windows 10/11, Docker Desktop (Linux engine, WSL2), Kind
+(v0.33.0 — see `k8s/kind-config.yaml` for the pinned node image), kubectl
+(v1.36–1.38 for the pinned Kubernetes 1.37.0 node; upgrade the client manually —
+currently installed 1.34.1 is below the skew window), Python ≥ 3.11 (tested with
+3.14), PowerShell.
 
 ```powershell
 # 0) Check the environment (prints GO/NO-GO per item)
@@ -146,7 +149,8 @@ Python ≥ 3.11 (tested with 3.14), PowerShell.
 # 5) Reset the scenario (the MVP never mutates the cluster otherwise)
 ./scripts/reset-scenario.ps1 -Scenario SC-01
 
-# 6) Validate the YAML configuration with the basic test suite (no cluster needed)
+# 6) Validate the YAML configuration with the basic static test suite (no cluster needed)
+python -m pip install -r requirements-dev.txt   # first time: pytest + PyYAML
 python -m pytest tests/ -v
 ```
 
@@ -154,13 +158,12 @@ python -m pytest tests/ -v
 
 ```
 OpsPilot/
-├── README.md, TEAM.md, CONTRIBUTING.md, .gitignore, .env.example
-├── Cahier_des_charges_OpsPilot.pdf        # authoritative specification (do not modify)
+├── README.md, TEAM.md, CONTRIBUTING.md, .gitignore, .env.example, requirements-dev.txt
 ├── docs/
 │   ├── architecture/ARCHITECTURE.md       # full architecture + Mermaid diagram
 │   ├── project/                           # ROADMAP, S0_S1_PLAN, TEAM_WORK_PLAN,
 │   │                                      # REQUIREMENTS_TRACEABILITY
-│   └── specification/                     # spec copy (+ readable extraction)
+│   └── specification/                     # canonical specification copy (+ readable extraction)
 ├── k8s/kind-config.yaml                   # Kind cluster definition
 ├── k8s/rbac/                              # namespace, ServiceAccount, Role, RoleBinding
 ├── scenarios/             # SC-01, SC-02, SC-04 manifests + scenario contracts
@@ -182,8 +185,8 @@ section in CONTRIBUTING.
 | Stage | Objective | Status |
 |---|---|---|
 | S0 | Environment validation, literature matrix, GO/NO-GO | 🔄 configs committed, G0 pending |
-| S1 | Kind lab + FastAPI-less demo app + SC-01, real first snapshot | 🔄 implemented, awaiting cluster |
-| S2 | SC-02/SC-03 + 4 MCP tools + RBAC tests | 📋 planned |
+| S1 | Kind lab + FastAPI demo app + the three mandatory scenarios (SC-01, SC-02, SC-04), real first snapshot | 🔄 implemented, awaiting cluster |
+| S2 | 4 MCP tools + RBAC tests (+ **optional** SC-03 Pending Pod extension only if MVP-stable) | 📋 planned |
 | S3 | Evidence schema + EQG | 📋 planned |
 | S4 | RAG pipeline + corpus 1.36/1.37 | 📋 planned |
 | S5 | LangGraph workflow + LLM report validator + base UI | 📋 planned |

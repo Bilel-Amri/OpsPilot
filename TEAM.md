@@ -38,8 +38,9 @@ it in a follow-up commit.
    or *tested/executed* — never claim "works" before it executes.
 5. **Secrets & data hygiene:** no API keys, tokens or kubeconfigs in the repo
    (SEC-07). The lab contains only synthetic test data (NFR-08).
-6. **The authoritative spec is `Cahier_des_charges_OpsPilot.pdf`** (copy in
-   `docs/specification/`). The PDF is never modified; deviations are proposed
+6. **The authoritative spec is the canonical PDF kept at
+   `docs/specification/Cahier_des_charges_OpsPilot.pdf`** (never modified; the
+   root-level duplicate was removed in the S0 review). Deviations are proposed
    through issues/PRs named `spec-change: ...` and confirmed by the supervisor.
 7. **Meeting cadence:** at least one sync per study week during S0–S7; each sync
    ends with an updated status in `docs/project/TEAM_WORK_PLAN.md`.

@@ -18,5 +18,5 @@ if ($LASTEXITCODE -ne 0) { throw 'kind load docker-image failed.' }
 
 Write-Output ''
 Write-Output "Image available inside the cluster: ${ImageTag}"
-Write-Output 'SC-02 is intentionally NOT built (its manifest uses a never-built tag with imagePullPolicy: Never — see its header).'
+Write-Output 'SC-02 is intentionally NOT built (its manifest pulls from an unresolvable .invalid host on purpose — see its header).'
 Write-Output 'Next: scripts/run-scenario.ps1 -Scenario SC-01'

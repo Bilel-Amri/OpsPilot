@@ -1,17 +1,28 @@
 # SC-02 ImagePullBackOff — demo deployment (spec §10.6 row 2).
 #
-# Reproducibility decision (documented per CONTRIBUTING "decisions in PR",
-# reviewed as part of the initialization commit):
-#   imagePullPolicy: Never + a tag that was never built/loaded means the kubelet
-#   checks local containerd images only and reports ErrImagePull, then cycles
-#   ImagePullBackOff — WITHOUT any registry or network dependency. This keeps the
-#   scenario reproducible offline, which the spec values (NFR-02/§20.5).
-#   A network variant (nonexistent tag on a real registry) is possible but adds
-#   a network dependency; do not switch without team review.
+# Pull-attempt design (corrected after the S0 review):
+#   An earlier draft used `imagePullPolicy: Never` with a never-built local tag.
+#   That does NOT produce ImagePullBackOff: the kubelet never tries a pull and
+#   reports ErrImageNeverPull instead — which is a different family of failure.
+#
+#   This manifest therefore makes the kubelet genuinely ATTEMPT pulls and fail
+#   them without depending on any real registry: the image host uses the
+#   reserved top-level domain `.invalid` (RFC 2606), which can never resolve.
+#   With `imagePullPolicy: Always` the kubelet tries to pull on every container
+#   start, the registry lookup fails, the first event is ErrImagePull, and after
+#   the first retry the Pod cycles ImagePullBackOff — the target family (spec
+#   §10.6 row 2). No network beyond local DNS behaviour is required; the failures
+#   are caused by the unresolvable host, not by the image contents.
+#
+#   Alternative (network-dependent, requires team review before switching):
+#   a nonexistent tag under registry.k8s.io or Docker Hub produces the same
+#   ErrImagePull/ImagePullBackOff cycle from real HTTP 404 responses.
 #
 # Expected (to be OBSERVED, never assumed — spec §10.6):
-#   - events: reason ErrImagePull / ImagePullBackOff, type Warning/Failed,
-#     bound to this Pod UID, with firstTimestamp/lastTimestamp/count (spec §9.2)
+#   - events: reason ErrImagePull first, then reason ImagePullBackOff,
+#     type Warning/Failed, bound to this Pod UID, with
+#     firstTimestamp/lastTimestamp/count (spec §9.2)
+#   - ErrImageNeverPull must NOT appear (it would betray a `Never` policy mistake)
 #   - NO application logs: the container never starts. Absence of logs is the
 #     normal case here (absence ne justifie pas d'inventer une cause).
 apiVersion: apps/v1
@@ -39,9 +50,10 @@ spec:
       restartPolicy: Always
       containers:
         - name: api
-          # This tag is DELIBERATELY never built by scripts/build-load-demo-image.ps1
-          image: opspilot/demo-app:s2-tag-never-built
-          imagePullPolicy: Never
+          # Host uses the reserved `.invalid` TLD (RFC 2606): DNS can never
+          # resolve it, so every pull attempt fails without touching a registry.
+          image: opspilot.demo.invalid/opspilot/demo-app:s2
+          imagePullPolicy: Always   # real pull attempts (Never would give ErrImageNeverPull)
           resources:
             requests:
               memory: "64Mi"

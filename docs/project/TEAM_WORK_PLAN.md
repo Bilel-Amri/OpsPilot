@@ -24,7 +24,7 @@ automatically. See `scripts/check-environment.ps1` run log in
 |---|---|---|---|---|---|---|
 | S0-01 | `check-environment.ps1` (engine/daemon, WSL2, Kind, kubectl, python, RAM/disk) | Mohamed Amine | `scripts/check-environment.ps1` | Prints per-item GO/NO-GO, exits non-zero on NO-GO | — | 🔶 (script ✅ syntax-reviewed; no NO-GO-free run yet) |
 | S0-02 | Literature matrix R14–R21 with licence/repo verification | Bilel | `docs/research/LITERATURE_MATRIX.md` | One verified row per reference; allowed-claims column | SH-04 optional | 📋 |
-| S0-03 | Kind cluster config + version pinning policy | Mohamed Amine | `k8s/kind-config.yaml` | Reproducible single-node cluster; node image pinned (candidate `kindest/node:v1.34.0`, confirm tag at G0) | — | 🔶 |
+| S0-03 | Kind cluster config + version pinning policy | Mohamed Amine | `k8s/kind-config.yaml` | Reproducible single-node cluster; kind v0.33.0 + node image digest-pinned `kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5` (verified from official kind v0.33.0 release notes, 2026-11-02) | — | 🔶 (pin verified vs release notes; cluster creation not run) |
 | S0-04 | Read-only RBAC manifests | Mohamed Amine | `k8s/rbac/{namespace,serviceaccount,role,rolebinding}.yaml` | SA `opspilot-mcp` limited to `pods get,list` / `pods/log get` / `events get,list`; static tests green | S0-01 (for apply) | 🔶 apply pending |
 | S0-05 | Basic test suite (YAML validity, RBAC static security, scenario contracts) | Bilel | `tests/*.py` | `pytest` green, no cluster/no network required | — | ✅ |
 | S0-06 | Spec copy + readable extraction in `docs/specification/` | Bilel | `docs/specification/*` | Authoritative PDF preserved untouched + extraction marked unofficial | — | ✅ |
@@ -36,7 +36,7 @@ automatically. See `scripts/check-environment.ps1` run log in
 | S1-01 | `create-cluster.ps1` (kind create + apply RBAC + verify) | Mohamed Amine | `scripts/create-cluster.ps1` | Cluster `opspilot` up; namespace+RBAC applied; script fails loudly on any step | SH-03 | 🔶 |
 | S1-02 | Demo FastAPI app (healthy / crashloop / oom behaviors) | Mohamed Amine | `demo-app/{app.py,requirements.txt,Dockerfile}` | One image, three behaviors by env var; **not** the future backend | Docker Engine | 🔶 |
 | S1-03 | `build-load-demo-image.ps1` | Mohamed Amine | `scripts/build-load-demo-image.ps1` | Image `opspilot/demo-app:s1` built + loaded into Kind | S1-01, S1-02 | 🔶 |
-| S1-04 | Scenario manifests SC-01/SC-02/SC-04 + scenario contracts | Mohamed Amine, Bilel reviews | `scenarios/sc-01-crashloopbackoff/*`, `scenarios/sc-02-imagepullbackoff/*`, `scenarios/sc-04-oomkilled/*` | Declarative, offline-reproducible incidents (SC-02 uses local-only image policy) | S1-03 | 🔶 |
+| S1-04 | Scenario manifests SC-01/SC-02/SC-04 + scenario contracts | Mohamed Amine, Bilel reviews | `scenarios/sc-01-crashloopbackoff/*`, `scenarios/sc-02-imagepullbackoff/*`, `scenarios/sc-04-oomkilled/*` | Declarative, reproducible incidents (SC-02: `imagePullPolicy: Always` + unresolvable `.invalid` host → genuine pull attempts → ErrImagePull/ImagePullBackOff; a `Never` policy would yield ErrImageNeverPull and was corrected after the S0 review) | S1-03 | 🔶 |
 | S1-05 | `run-scenario.ps1` + `reset-scenario.ps1` | Mohamed Amine | `scripts/run-scenario.ps1`, `scripts/reset-scenario.ps1` | Deploys/waits/prints evidence or removes cleanly; reset restores healthy lab | S1-03 | 🔶 |
 | S1-06 | **SC-01 real run → first snapshot (G1)** | Mohamed Amine, Bilel reviews snapshot | — | Waiting reason CrashLoopBackOff + restartCount with Pod phase Running documented; records in `out/evidence/SC-01/` | S1-05 | ⛔ (G0) |
 | S1-07 | **SC-02 real run** (`ErrImagePull`/`ImagePullBackOff` events; no container logs expected) | Mohamed Amine | — | Events with timestamps + involvedObject UID collected | S1-05 | ⛔ (G0) |
@@ -51,7 +51,7 @@ S1-06 → S1-09 → update this table → open the S2 planning PR.
 
 | Stage | Bilel Amri (files) | Mohamed Amine Gotai (files) |
 |---|---|---|
-| S2 | MCP client smoke-tests supporting workflow integration; consumer-side tool contract tests `tests/test_mcp_contracts.py` | `mcp_server/` (4 tools, bounded params §9.2, SDK v2); `kubectl auth can-i` refusal suite; SC-02/SC-03 execution; frozen snapshots |
+| S2 | MCP client smoke-tests supporting workflow integration; consumer-side tool contract tests `tests/test_mcp_contracts.py` | `mcp_server/` (4 tools, bounded params §9.2, SDK v2); `kubectl auth can-i` refusal suite; **optional** SC-03 execution (only if the MVP-stable extension is confirmed, ROADMAP note); frozen snapshots |
 | S3 | `backend/app/evidence/` schema + `backend/app/eqg/` rules (each rule: id + rationale + positive & negative test, §16.4); degraded-case fixture generator (12 conditions, parent snapshots) | Lab-side fixes surfaced by EQG tests; scenario tag/label support for snapshot lineage |
 | S4 | `backend/app/rag/` corpus manifest (1.36/1.37, CC-BY-4.0), ingestion, lexical+dense+hybrid retrievers | Postgres container/dev compose integration; `kubectl`-side helpers for lab metadata |
 | S5 | LangGraph graph + prompt + post-generation validator + report schema | `backend/` FastAPI API routes (§13.3); `frontend/` React screens (§13.1); CI workflow (lint/pytest/YAML) |
@@ -68,8 +68,8 @@ Mohamed Amine reviews evidence/EQG/RAG/evaluation PRs; EQG-vs-lab contract chang
 |---|---|---|---|
 | Docker Engine | — (not running at init) | — | 2026-11-02 |
 | Docker CLI | 29.3.1 | Bilel | 2026-11-02 |
-| Kind | — (not installed at init) | — | 2026-11-02 |
-| kubectl | v1.34.1 (client) | Bilel | 2026-11-02 |
+| Kind | — (not installed at init; target release **v0.33.0** per release notes) | — | 2026-11-02 |
+| kubectl | v1.34.1 (client) — **below the skew window** for the pinned 1.37.0 node; operator must upgrade to 1.36–1.38 manually | Bilel | 2026-11-02 |
 | Python | 3.14.7 | Bilel | 2026-11-02 |
-| Kind node image | — (candidate `kindest/node:v1.34.0`) | — | — |
+| Kind node image | `kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5` — digest verified against the official kind v0.33.0 release notes (not yet pulled/ran) | Bilel | 2026-11-02 |
 | demo-app image | — candidate `opspilot/demo-app:s1` | — | — |

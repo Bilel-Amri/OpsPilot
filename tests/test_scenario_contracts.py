@@ -2,8 +2,8 @@
 
 Each scenario.yaml is the contract for observers/EQG (S3) and records which
 absence is critical per the spec §10.6 matrix. The deployments must follow the
-reproducibility decisions documented in their headers (SC-02 must stay
-offline-reproducible via imagePullPolicy: Never).
+reproducibility decisions documented in their headers (SC-02 attempts pulls
+against an unresolvable reserved-TLD host so the Pod cycles ImagePullBackOff).
 """
 from pathlib import Path
 
@@ -60,6 +60,15 @@ def test_sc04_contract_states_exit_code_must_be_observed():
     assert "never" in note or "not presumed" in note, "exit code note must forbid presuming 137"
 
 
+def test_sc02_contract_documents_the_never_policy_trap():
+    """S0 review fix must stay documented: policy `Never` yields
+    ErrImageNeverPull — not the ImagePullBackOff family this scenario targets."""
+    contract = _yaml(SCENARIOS / "sc-02-imagepullbackoff" / "scenario.yaml")
+    contract_text = str(contract)
+    assert "ErrImageNeverPull" in contract_text
+    assert "Never" in contract_text  # the trap, named where it is guarded
+
+
 def test_deployment_images_follow_the_reproducibility_decisions():
     d01 = _yaml(SCENARIOS / "sc-01-crashloopbackoff" / "deployment.yaml")
     c01 = d01["spec"]["template"]["spec"]["containers"][0]
@@ -69,8 +78,14 @@ def test_deployment_images_follow_the_reproducibility_decisions():
 
     d02 = _yaml(SCENARIOS / "sc-02-imagepullbackoff" / "deployment.yaml")
     c02 = d02["spec"]["template"]["spec"]["containers"][0]
-    assert c02["imagePullPolicy"] == "Never"
-    assert "never-built" in c02["image"]
+    # Valid pull-attempt design (S0 review fix): the kubelet must genuinely try
+    # pulls so the Pod cycles ImagePullBackOff.
+    assert c02["imagePullPolicy"] == "Always", (
+        "SC-02 must attempt pulls; a Never policy yields ErrImageNeverPull, "
+        "which is not this scenario's family"
+    )
+    # Failures come from an unresolvable host: reserved RFC 2606 `.invalid` TLD
+    assert c02["image"].split("/")[0].endswith(".invalid")
 
     d04 = _yaml(SCENARIOS / "sc-04-oomkilled" / "deployment.yaml")
     c04 = d04["spec"]["template"]["spec"]["containers"][0]

@@ -1,6 +1,7 @@
 # OpsPilot Architecture
 
-Source of truth: `Cahier_des_charges_OpsPilot.pdf` V1.3 (spec §7–§11, §14).
+Source of truth: `docs/specification/Cahier_des_charges_OpsPilot.pdf` V1.3
+(canonical copy; spec §7–§11, §14).
 This page explains the architecture in the repository's own words for day-to-day work.
 
 ## 1. Design principles
@@ -119,7 +120,7 @@ universal TTL (spec §10.5, R-05).
 
 | Repository path | Component | Stage | Status |
 |---|---|---|---|
-| `k8s/kind-config.yaml` | Kind cluster definition (node version pinned policy) | S0 | implemented, **untested until G0** |
+| `k8s/kind-config.yaml` | Kind cluster definition (kind v0.33.0; Kubernetes 1.37.0 node, `@sha256`-pinned from the kind v0.33.0 release notes) | S0 | pin verified vs release notes, **cluster creation pending G0** |
 | `k8s/rbac/*` | namespace `opspilot-lab`, ServiceAccount `opspilot-mcp`, Role, RoleBinding | S0 | implemented, apply untested |
 | `scenarios/*` | SC-01 CrashLoopBackOff, SC-02 ImagePullBackOff, SC-04 OOMKilled manifests + scenario contracts | S0/S1 | implemented, generation untested until G1 |
 | `demo-app/*` | small **FastAPI** app whose three behaviors generate the incidents (this is *not* the backend) | S1 | implemented, image build untested until Docker runs |
