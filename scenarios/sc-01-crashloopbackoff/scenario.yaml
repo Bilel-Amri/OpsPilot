@@ -1,0 +1,54 @@
+# Scenario contract - SC-01 CrashLoopBackOff (spec §10.6 row 1)
+#
+# This file is a contract for observers/EQG (S3), NOT a source of fabricated data:
+# missing fields must stay null/unavailable in collected evidence (NFR-01).
+scenario_id: SC-01
+title: CrashLoopBackOff (container Waiting reason)
+family: crashloopbackoff
+status: implemented-untested   # becomes tested after G1 (S1-06)
+spec_reference: "Cahier des charges §9.3, §10.6 row 1; S1 milestone §17.2"
+demo_behavior: demo-app/app.py SCENARIO=crashloop (logs startup, sleeps 3s, exits 1)
+deployment: sc-01-crashloopbackoff/deployment.yaml
+
+# What a complete collection for this scenario should contain.
+# criticality levels: critical  -> EQG may block confirmed diagnosis (S3)
+#                     expected  -> absence yields PARTIAL, never fabrication
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: pod_phase
+    source_type: pod_status
+    criticality: critical
+  - field: container_state_waiting_reason
+    source_type: pod_status
+    expected_value: CrashLoopBackOff
+    criticality: critical
+  - field: restart_count
+    source_type: pod_status
+    expected_condition: ">= 3 within ~3 minutes"
+    criticality: critical
+  - field: last_state_terminated   # e.g. reason Error / exit code 1
+    source_type: pod_status
+    criticality: expected
+  - field: container_image
+    source_type: pod_spec
+    criticality: critical
+  - field: resource_requests_limits
+    source_type: pod_spec
+    criticality: expected
+  - field: logs_current
+    source_type: pod_logs
+    criticality: expected
+  - field: logs_previous          # "previous" log = most useful proof (spec §10.4)
+    source_type: pod_logs
+    criticality: expected
+    note: absence does NOT authorize inventing the root cause (spec §10.6)
+  - field: linked_events           # e.g. BackOff / Unhealthy, bound to Pod UID
+    source_type: events
+    criticality: expected
+
+# Pedagogical trap this scenario documents (spec §9.3 / §10.4):
+# The POD PHASE typically stays "Running" while the CONTAINER state is
+# "Waiting - CrashLoopBackOff". CrashLoopBackOff is never a Pod phase.
+expected_pitfall: pod_phase_running_with_container_waiting_crashloopbackoff

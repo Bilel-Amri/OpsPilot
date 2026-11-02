@@ -1,0 +1,21 @@
+# Kind cluster definition for the OpsPilot laboratory (spec §4.1, §20.1, §20.3).
+#
+# Version-freezing policy (spec §4.4 + docs/project/S0_S1_PLAN.md S0.1):
+# kind itself is NOT yet installed on this machine (DO/NO-GO gate G0 is open),
+# so the node image below is a *candidate* pinned to match the already-installed
+# kubectl client (v1.34.1). Before the first `kind create cluster`, verify that
+# this exact node image tag exists (docker manifest inspect kind/node:v1.34.0 or
+# https://github.com/kubernetes-sigs/kind/releases). Freeze the verified pair
+# (kind version + node image) in docs/project/TEAM_WORK_PLAN.md after the first
+# successful run — do not change it silently afterwards.
+#
+# Sizing (spec §4.4 / §20.5): single node, capped to stay within a 15.2 GB RAM host.
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: opspilot
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.34.0  # CANDIDATE - verify tag availability at G0, then freeze
+    # Naive host resource guard-rails are not supported by kind here; capacity is
+    # managed by keeping one single-node cluster and sequential services (§20.5).

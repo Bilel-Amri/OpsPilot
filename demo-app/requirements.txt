@@ -1,0 +1,12 @@
+# Runtime dependencies of the lab demo image (S1).
+#
+# FastAPI + uvicorn are used because the specification's S1 milestone is explicitly
+# "Cluster Kind, application FastAPI, SC-01" (spec §17.2). Keep this list minimal:
+# NOTHING else may be added to the demo image without a spec justification.
+#
+# NOTE: exact pins must be reviewed at the first successful `scripts/
+# build-load-demo-image.ps1` run (S1-02) and frozen, per spec §4.4
+# ("figer les versions dans les instructions après test local"). The versions
+# below are known real releases; bump to the newest verified patch at that time.
+fastapi==0.115.6
+uvicorn==0.34.0

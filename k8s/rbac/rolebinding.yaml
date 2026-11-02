@@ -1,0 +1,18 @@
+# Binds the read-only Role to the dedicated MCP ServiceAccount, inside the lab
+# namespace only (no cluster-wide RoleBinding on purpose — sec §6.3).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: opspilot-mcp-readonly
+  namespace: opspilot-lab
+  labels:
+    app.kubernetes.io/part-of: opspilot
+    app.kubernetes.io/component: collection
+subjects:
+  - kind: ServiceAccount
+    name: opspilot-mcp
+    namespace: opspilot-lab
+roleRef:
+  kind: Role
+  name: opspilot-mcp-readonly
+  apiGroup: rbac.authorization.k8s.io

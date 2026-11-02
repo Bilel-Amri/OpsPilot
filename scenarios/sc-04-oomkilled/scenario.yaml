@@ -1,0 +1,40 @@
+# Scenario contract - SC-04 OOMKilled (spec §10.6 row 3)
+scenario_id: SC-04
+title: OOMKilled (container terminated beyond the memory limit)
+family: oomkilled
+status: implemented-untested
+spec_reference: "Cahier des charges §9.2, §10.6 row 3"
+demo_behavior: demo-app/app.py SCENARIO=oom (unbounded allocation under a 64Mi container limit)
+deployment: sc-04-oomkilled/deployment.yaml
+
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: container_last_state_terminated_reason
+    source_type: pod_status
+    expected_value: OOMKilled
+    criticality: critical
+  - field: exit_code               # must be OBSERVED; 137 = SIGKILL expected but NOT presumed (spec §10.6)
+    source_type: pod_status
+    criticality: critical
+    note: "the exit code must never be assumed — report only what the API actually returned"
+  - field: restart_count
+    source_type: pod_status
+    expected_condition: ">= 2"
+    criticality: critical
+  - field: resource_limits         # memory limits read from the container SPEC (spec §10.4)
+    source_type: pod_spec
+    criticality: critical
+  - field: resource_requests
+    source_type: pod_spec
+    criticality: expected
+  - field: logs_current_or_previous # current and previous logs, if retained
+    source_type: pod_logs
+    criticality: expected
+    note: absence does not authorize assuming OOM (the kill is proven by lastState, not by logs)
+  - field: linked_events           # e.g. OOMKilling/OOMKilled node events, when exposed
+    source_type: events
+    criticality: expected
+
+expected_pitfall: presuming_exit_code_137_without_observation

@@ -1,0 +1,40 @@
+# Scenario contract - SC-02 ImagePullBackOff (spec §10.6 row 2)
+scenario_id: SC-02
+title: ImagePullBackOff (image never available locally)
+family: imagepullbackoff
+status: implemented-untested   # is tested after real run in S1/S2
+spec_reference: "Cahier des charges §9.2, §10.6 row 2"
+demo_behavior: "manifest-only (image tag never built + imagePullPolicy: Never -> offline reproducible ErrImagePull/ImagePullBackOff)"
+deployment: sc-02-imagepullbackoff/deployment.yaml
+
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: pod_phase                # expected Pending: container never starts
+    source_type: pod_status
+    expected_value: Pending
+    criticality: critical
+  - field: container_state_waiting_reason
+    source_type: pod_status
+    expected_value: ImagePullBackOff # ErrImagePull first, then BackOff cycling
+    criticality: critical
+  - field: container_image          # the image declared in spec must match the manifest
+    source_type: pod_spec
+    criticality: critical
+  - field: linked_events            # Warning/Failed: ErrImagePull, ImagePullBackOff
+    source_type: events
+    criticality: critical
+  - field: event_timestamps         # firstTimestamp/lastTimestamp/count preserved
+    source_type: events
+    criticality: expected
+  - field: logs_current             # NOT expected: container never started
+    source_type: pod_logs
+    criticality: expected
+    note: absence is normal (container never started); any application log observed here would itself be a contradiction to investigate
+  - field: logs_previous
+    source_type: pod_logs
+    criticality: expected
+    note: same — absence is normal for this family
+
+expected_pitfall: inventing_app_logs_for_a_container_that_never_started

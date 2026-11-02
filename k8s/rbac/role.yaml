@@ -1,0 +1,33 @@
+# Read-only Role for the OpsPilot MCP collection identity.
+#
+# Minimum permissions derived from the four MVP tools (spec §9.2):
+#   list_pods          -> pods: list (implies get; both listed explicitly)
+#   get_pod_status     -> pods: get
+#   get_pod_logs       -> pods/log: get   (subresource — pods rights do NOT
+#                                           implicitly grant pods/log, spec §9.4 [R11])
+#   get_recent_events  -> events: get, list
+#
+# Explicitly NOT granted anywhere in this Role (spec §9.4 + SEC-02, SEC-03, SEC-08):
+#   secrets (any verb), watch, create/update/patch/deleteproxy/proxy/escalate,
+#   exec/attach/port-forward, and any other resource.
+# Static guarantees for these refusals: tests/test_rbac_manifests.py.
+# Runtime refusals are verified with `kubectl auth can-i` (S0_S1_PLAN.md §S1.1,
+# re-run in S2 before any LLM integration — gate G2).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: opspilot-mcp-readonly
+  namespace: opspilot-lab
+  labels:
+    app.kubernetes.io/part-of: opspilot
+    app.kubernetes.io/component: collection
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list"]

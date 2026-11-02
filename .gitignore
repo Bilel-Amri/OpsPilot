@@ -1,0 +1,44 @@
+# --- Secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*_token.txt
+
+# --- Kubernetes: never commit cluster credentials ---
+kubeconfig*
+*.kubeconfig
+
+# --- Local lab artifacts (collected evidence, snapshots, benchmark runs) ---
+out/
+lab-artifacts/
+*.snapshot.json
+evaluation-results/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+coverage/
+*.tsbuildinfo
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store

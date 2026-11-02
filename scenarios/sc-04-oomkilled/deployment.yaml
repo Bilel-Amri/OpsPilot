@@ -1,0 +1,46 @@
+# SC-04 OOMKilled — demo deployment (spec §10.6 row 3).
+#
+# Human-triggered by scripts/run-scenario.ps1 -Scenario SC-04.
+# The container (demo-app SCENARIO=oom) allocates memory without bound; with a
+# 64Mi memory limit the kernel kills it -> lastState.terminated.reason=OOMKilled
+# with an observed exit code (expected 137 = SIGKILL, but it MUST be observed
+# from the real run, never presumed — spec §10.6 row 3).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-sc04-oomkill
+  namespace: opspilot-lab
+  labels:
+    app.kubernetes.io/name: opspilot-demo
+    app.kubernetes.io/part-of: opspilot
+    opspilot.io/scenario: SC-04
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opspilot-demo
+      opspilot.io/scenario: SC-04
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opspilot-demo
+        app.kubernetes.io/part-of: opspilot
+        opspilot.io/scenario: SC-04
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: api
+          image: opspilot/demo-app:s1          # must be loaded with kind load (S1-03)
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SCENARIO
+              value: oom
+          # Memory limits BELONG to the container spec (spec §10.4 last bullet):
+          # the EQG (S3) must read limits/requests from spec, and reason/exitCode
+          # from status/lastState — never mix the two.
+          resources:
+            requests:
+              memory: "48Mi"
+              cpu: "100m"
+            limits:
+              memory: "64Mi"
