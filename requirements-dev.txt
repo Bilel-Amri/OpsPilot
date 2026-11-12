@@ -5,3 +5,4 @@
 # each is frozen after verification, per spec §4.4 and §16.2.
 PyYAML==6.0.3
 pytest==9.1.1
+psycopg[binary]

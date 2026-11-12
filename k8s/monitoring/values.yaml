@@ -1,0 +1,72 @@
+
+# Configuration légère pour le laboratoire OpsPilot
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 200Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 1
+    retention: 24h
+    storageSpec: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 500m
+        memory: 600Mi
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 25m
+        memory: 50Mi
+      limits:
+        cpu: 100m
+        memory: 100Mi
+
+prometheusOperator:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 200Mi
+
+kubeStateMetrics:
+  enabled: true
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 50Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: 25m
+      memory: 30Mi
+    limits:
+      cpu: 100m
+      memory: 60Mi

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opspilot-mcp
+  namespace: opspilot-lab
+  labels:
+    app: opspilot-mcp
+    app.kubernetes.io/part-of: opspilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opspilot-mcp
+  template:
+    metadata:
+      labels:
+        app: opspilot-mcp
+    spec:
+      serviceAccountName: opspilot-mcp
+      containers:
+        - name: mcp-server
+          image: opspilot-mcp:0.3.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8001
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
