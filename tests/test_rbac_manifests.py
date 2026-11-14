@@ -24,11 +24,18 @@ def _role():
 
 
 def test_role_resource_and_verb_map_matches_mcp_tools():
-    rules = {tuple(r["resources"]): set(r["verbs"]) for r in _role()["rules"]}
-    # Minimum permissions for the four MVP tools (spec §9.2)
-    assert rules[("pods",)] >= {"get", "list"}
-    assert rules[("pods/log",)] == {"get"}
-    assert rules[("events",)] >= {"get", "list"}
+    rules = {
+        tuple(r["resources"]): set(r["verbs"])
+        for r in _role()["rules"]
+    }
+
+    expected_rules = {
+        ("pods",): {"get", "list"},
+        ("pods/log",): {"get"},
+        ("events",): {"get", "list"},
+    }
+
+    assert rules == expected_rules
 
 
 def test_role_contains_no_write_verb_and_no_sensitive_resources():
