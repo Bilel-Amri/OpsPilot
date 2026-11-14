@@ -1,0 +1,31 @@
+scenario_id: SC-04
+title: OOMKilled (container terminated beyond memory limit)
+family: oomkilled
+status: implemented-untested
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: container_last_state_terminated_reason
+    source_type: pod_status
+    expected_value: OOMKilled
+    criticality: critical
+  - field: exit_code
+    source_type: pod_status
+    criticality: critical
+  - field: restart_count
+    source_type: pod_status
+    expected_condition: ">= 2"
+    criticality: critical
+  - field: resource_limits
+    source_type: pod_spec
+    criticality: critical
+  - field: resource_requests
+    source_type: pod_spec
+    criticality: expected
+  - field: logs_current_or_previous
+    source_type: pod_logs
+    criticality: expected
+  - field: linked_events
+    source_type: events
+    criticality: expected

@@ -1,0 +1,234 @@
+{
+  "snapshot_id": "SNAP-SC01-DEMO-001",
+  "incident_id": "INC-SC01-DEMO-001",
+  "captured_at": "2026-11-14T12:02:30Z",
+  "cluster_version": "1.36",
+  "source_manifest": [
+    {
+      "tool_name": "get_pod_logs",
+      "status": "success",
+      "evidence_ids": [
+        "E-SC01-004",
+        "E-SC01-005"
+      ]
+    },
+    {
+      "tool_name": "get_pod_status",
+      "status": "success",
+      "evidence_ids": [
+        "E-SC01-001",
+        "E-SC01-002",
+        "E-SC01-003"
+      ]
+    },
+    {
+      "tool_name": "get_recent_events",
+      "status": "success",
+      "evidence_ids": [
+        "E-SC01-006"
+      ]
+    }
+  ],
+  "evidence_items": [
+    {
+      "evidence_id": "E-SC01-001",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "pod_status",
+      "tool_name": "get_pod_status",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": null,
+      "collected_at": "2026-11-14T12:00:00Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-001",
+      "payload": {
+        "pod": {
+          "name": "demo-api",
+          "uid": "pod-uid-sc01-demo-001",
+          "namespace": "opspilot-lab",
+          "phase": "Running"
+        },
+        "containers": [
+          {
+            "name": "api",
+            "state": {
+              "waiting": {
+                "reason": "CrashLoopBackOff"
+              }
+            },
+            "last_state": {
+              "terminated": {
+                "reason": "Error",
+                "exit_code": 1
+              }
+            },
+            "restart_count": 2
+          }
+        ]
+      },
+      "payload_hash": "0947bad2f6a0921602d5da654401b0ed95ff987484c11a7888afb1b2d40a0176"
+    },
+    {
+      "evidence_id": "E-SC01-002",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "pod_status",
+      "tool_name": "get_pod_status",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": null,
+      "collected_at": "2026-11-14T12:02:30Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-002",
+      "payload": {
+        "pod": {
+          "name": "demo-api",
+          "uid": "pod-uid-sc01-demo-001",
+          "namespace": "opspilot-lab",
+          "phase": "Running"
+        },
+        "containers": [
+          {
+            "name": "api",
+            "state": {
+              "waiting": {
+                "reason": "CrashLoopBackOff"
+              }
+            },
+            "last_state": {
+              "terminated": {
+                "reason": "Error",
+                "exit_code": 1
+              }
+            },
+            "restart_count": 3
+          }
+        ]
+      },
+      "payload_hash": "2982ce15e4b82a180aaa9abe8f01a374635be4f126d8a0a3e8d380bb20aa2da2"
+    },
+    {
+      "evidence_id": "E-SC01-003",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "pod_spec",
+      "tool_name": "get_pod_status",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": null,
+      "collected_at": "2026-11-14T12:02:00Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-003",
+      "payload": {
+        "pod": {
+          "name": "demo-api",
+          "uid": "pod-uid-sc01-demo-001",
+          "namespace": "opspilot-lab"
+        },
+        "containers": [
+          {
+            "name": "api",
+            "image": "opspilot-demo:dev",
+            "spec": {
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "64Mi"
+                },
+                "limits": {
+                  "cpu": "500m",
+                  "memory": "128Mi"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "payload_hash": "f3f4f74e5c42ae35459812d03cedbdecfd91268599f65b3328ed2fb56613f0d9"
+    },
+    {
+      "evidence_id": "E-SC01-004",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "pod_logs",
+      "tool_name": "get_pod_logs",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": "containerd://sc01-current-001",
+      "collected_at": "2026-11-14T12:02:10Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-004",
+      "payload": {
+        "previous": false,
+        "available": true,
+        "logs": "Starting OpsPilot demo application.\nInitializing application.\nSimulated application failure."
+      },
+      "payload_hash": "3291f295ecdc9a6e1cec1b93571f3aae4917a6830a74aff44b686a986306927d"
+    },
+    {
+      "evidence_id": "E-SC01-005",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "pod_logs",
+      "tool_name": "get_pod_logs",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": "containerd://sc01-previous-001",
+      "collected_at": "2026-11-14T12:02:10Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-005",
+      "payload": {
+        "previous": true,
+        "available": true,
+        "logs": "Previous container started.\nApplication initialization failed.\nProcess exited with code 1."
+      },
+      "payload_hash": "9b463424e1dfa92c88d73b229335c2fbe9b576e720de7cd7326316123a1ef4c8"
+    },
+    {
+      "evidence_id": "E-SC01-006",
+      "snapshot_id": "SNAP-SC01-DEMO-001",
+      "incident_id": "INC-SC01-DEMO-001",
+      "source_type": "events",
+      "tool_name": "get_recent_events",
+      "namespace": "opspilot-lab",
+      "pod_name": "demo-api",
+      "pod_uid": "pod-uid-sc01-demo-001",
+      "container_name": "api",
+      "container_id": null,
+      "collected_at": "2026-11-14T12:02:15Z",
+      "observed_at": null,
+      "resource_version": "opaque-E-SC01-006",
+      "payload": {
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "message": "Back-off restarting failed container api in pod demo-api",
+            "involvedObject": {
+              "kind": "Pod",
+              "namespace": "opspilot-lab",
+              "name": "demo-api",
+              "uid": "pod-uid-sc01-demo-001"
+            },
+            "eventTime": "2026-11-14T12:02:15Z",
+            "firstTimestamp": "2026-11-14T12:00:00Z",
+            "lastTimestamp": "2026-11-14T12:02:15Z",
+            "count": 3
+          }
+        ]
+      },
+      "payload_hash": "fb9929a5b9600c0e8b57c2114df0afd4b692f35a9124e9ed81ef38972228b337"
+    }
+  ]
+}

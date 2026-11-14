@@ -1,0 +1,167 @@
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opspilot.local/contracts/v1/evidence-item.schema.json",
+  "title": "OpsPilot EvidenceItem v1",
+  "description": "One normalized and traceable Kubernetes observation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "snapshot_id",
+    "incident_id",
+    "source_type",
+    "tool_name",
+    "namespace",
+    "pod_name",
+    "pod_uid",
+    "container_name",
+    "container_id",
+    "collected_at",
+    "observed_at",
+    "resource_version",
+    "payload_hash",
+    "payload"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^E-[A-Za-z0-9._-]+$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "incident_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "pod_inventory",
+        "pod_status",
+        "pod_logs",
+        "pod_events"
+      ]
+    },
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "list_pods",
+        "get_pod_status",
+        "get_pod_logs",
+        "get_recent_events"
+      ]
+    },
+    "namespace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pod_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pod_uid": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Kubernetes Pod UID. Null if unavailable."
+    },
+    "container_name": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "container_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "resource_version": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "Opaque Kubernetes resourceVersion, not a timestamp."
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 digest of canonical JSON payload."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Normalized observation consumed by the EQG."
+    },
+    "raw_payload": {
+      "description": "Optional original MCP response retained for traceability.",
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array"},
+        {"type": "string"},
+        {"type": "number"},
+        {"type": "boolean"},
+        {"type": "null"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source_type": {"const": "pod_inventory"}
+        },
+        "required": ["source_type"]
+      },
+      "then": {
+        "properties": {
+          "tool_name": {"const": "list_pods"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_type": {"const": "pod_status"}
+        },
+        "required": ["source_type"]
+      },
+      "then": {
+        "properties": {
+          "tool_name": {"const": "get_pod_status"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_type": {"const": "pod_logs"}
+        },
+        "required": ["source_type"]
+      },
+      "then": {
+        "properties": {
+          "tool_name": {"const": "get_pod_logs"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source_type": {"const": "pod_events"}
+        },
+        "required": ["source_type"]
+      },
+      "then": {
+        "properties": {
+          "tool_name": {"const": "get_recent_events"}
+        }
+      }
+    }
+  ],
+  "$comment": "Based on OpsPilot Cahier des charges V1.3 sections 9.2, 9.3, 10.3 and 10.4. The source_type/tool_name mapping is an implementation validation rule."
+}

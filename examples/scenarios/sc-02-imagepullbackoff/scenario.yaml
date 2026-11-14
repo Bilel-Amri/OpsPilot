@@ -1,0 +1,38 @@
+scenario_id: SC-02
+title: ImagePullBackOff (image pull cannot resolve registry host)
+family: imagepullbackoff
+status: implemented-untested
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: pod_phase
+    source_type: pod_status
+    criticality: critical
+  - field: container_state_waiting_reason
+    source_type: pod_status
+    expected_value: ImagePullBackOff
+    criticality: critical
+  - field: container_image
+    source_type: pod_spec
+    criticality: critical
+  - field: linked_events
+    source_type: events
+    expected_value: ErrImagePull
+    criticality: critical
+  - field: event_timestamps
+    source_type: events
+    criticality: expected
+  - field: no_errimageneverpull
+    source_type: manifest
+    criticality: critical
+  - field: logs_current
+    source_type: pod_logs
+    criticality: expected
+    expected_absence: true
+    absence_policy: allowed
+  - field: logs_previous
+    source_type: pod_logs
+    criticality: expected
+    expected_absence: true
+    absence_policy: allowed

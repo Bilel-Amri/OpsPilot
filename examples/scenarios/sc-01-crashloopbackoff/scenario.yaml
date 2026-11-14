@@ -1,0 +1,37 @@
+scenario_id: SC-01
+title: CrashLoopBackOff (container Waiting reason)
+family: crashloopbackoff
+status: implemented-untested
+required_observations:
+  - field: pod_uid
+    source_type: pod_status
+    criticality: critical
+  - field: pod_phase
+    source_type: pod_status
+    criticality: critical
+  - field: container_state_waiting_reason
+    source_type: pod_status
+    expected_value: CrashLoopBackOff
+    criticality: critical
+  - field: restart_count
+    source_type: pod_status
+    expected_condition: ">= 3 within ~3 minutes"
+    criticality: critical
+  - field: last_state_terminated
+    source_type: pod_status
+    criticality: expected
+  - field: container_image
+    source_type: pod_spec
+    criticality: critical
+  - field: resource_requests_limits
+    source_type: pod_spec
+    criticality: expected
+  - field: logs_current
+    source_type: pod_logs
+    criticality: expected
+  - field: logs_previous
+    source_type: pod_logs
+    criticality: expected
+  - field: linked_events
+    source_type: events
+    criticality: expected

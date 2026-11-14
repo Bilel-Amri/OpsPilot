@@ -1,0 +1,2 @@
+# Runtime dependencies for the Evidence Quality Gate.
+PyYAML==6.0.3

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opspilot.local/contracts/v1/evidence-snapshot.schema.json",
+  "title": "OpsPilot EvidenceSnapshot v1",
+  "description": "An immutable collection of Kubernetes observations associated with one incident and one collection cycle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "incident_id",
+    "captured_at",
+    "cluster_version",
+    "source_manifest"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "incident_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cluster_version": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "source_manifest": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tool_name", "status", "evidence_ids"],
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "enum": [
+              "list_pods",
+              "get_pod_status",
+              "get_pod_logs",
+              "get_recent_events"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "partial", "failed"]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^E-[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Core fields follow the EvidenceSnapshot model in OpsPilot V1.3 section 14.1. The source_manifest structure is an implementation decision."
+}

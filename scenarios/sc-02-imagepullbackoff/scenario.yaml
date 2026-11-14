@@ -32,14 +32,19 @@ required_observations:
     source_type: manifest
     criticality: critical
     note: imagePullPolicy must attempt pulls (Always/IfNotPresent); policy Never yields ErrImageNeverPull, which is NOT this scenario's family
-  - field: logs_current             # NOT expected: container never started
+  - field: logs_current
     source_type: pod_logs
     criticality: expected
-    note: absence is normal (container never started); any application log observed here would itself be a contradiction to investigate
+    expected_absence: true
+    absence_policy: allowed
+    note: absence is normal because the container never started; unexpected application logs are a contradiction to investigate
+
   - field: logs_previous
     source_type: pod_logs
     criticality: expected
-    note: same — absence is normal for this family
+    expected_absence: true
+    absence_policy: allowed
+    note: absence is normal because the container never started
 
 expected_pitfall: |
   (1) using imagePullPolicy: Never and mistaking ErrImageNeverPull for a genuine
