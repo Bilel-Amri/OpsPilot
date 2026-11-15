@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opspilot-demo
+  namespace: opspilot-lab
+  labels:
+    app.kubernetes.io/name: opspilot-demo
+    app.kubernetes.io/part-of: opspilot
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: opspilot-demo
+
+  template:
+    metadata:
+      labels:
+        app: opspilot-demo
+        app.kubernetes.io/name: opspilot-demo
+
+    spec:
+      automountServiceAccountToken: false
+
+      containers:
+        - name: demo-app
+          image: opspilot-demo:0.1.0
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          env:
+            - name: SCENARIO
+              value: "healthy"
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
